@@ -1,2 +1,3 @@
-# CustomerDashboard
-Hopcharge Customer Dashboard for Operational Purposes
+# customerboard
+
+To access the dashboard [click here](https://customerhopcharge.streamlit.app/)
