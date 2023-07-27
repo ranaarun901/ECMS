@@ -47,7 +47,6 @@ requiredcols = ['Actual Date', 'EPOD Name', 'Customer Location City']
 
 merged_df = pd.merge(df, df1, on=["licensePlate"])
 merged_df = merged_df[requiredcols]
-merged_df.to_csv('merged.csv')
 
 df = merged_df
 
@@ -85,18 +84,23 @@ def check_credentials():
         username = st.text_input("Username")
         password = st.text_input(
             "Password", type="password")
-
+    flag = 0
     if username in st.secrets["username"] and password in st.secrets["password"]:
         index = st.secrets["username"].index(username)
         if st.secrets["password"][index] == password:
             st.session_state["logged_in"] = True
+            flag = 1
         else:
             col2.warning("Invalid username or password.")
+            flag = 0
     elif username not in st.secrets["username"] or password not in st.secrets["password"]:
         col2.warning("Invalid username or password.")
+        flag = 0
+    ans = [username, flag]
+    return ans
 
 
-def main_page():
+def main_page(username):
     st.markdown(
         """
             <style>
@@ -132,12 +136,17 @@ def main_page():
         end_date = st.date_input(
             'End Date', min_value=min_date, max_value=max_date, value=max_date, key="epod-date-end")
 
-    epods = df['EPOD Name'].unique()
+    def get_epods_by_username(df, input_username):
+        filtered_df = df[df['username'].str.contains(input_username, na=False)]
+        epod_list = filtered_df['EPOD Name'].tolist()
+
+        return epod_list
+    epods = get_epods_by_username(df1, username)
 
     with col3:
 
         EPod = st.multiselect(label='Select The EPod',
-                              options=['All'] + epods.tolist(),
+                              options=['All'] + epods,
                               default='All')
     if 'All' in EPod:
         EPod = epods
@@ -244,12 +253,15 @@ def main_page():
                 st.plotly_chart(fig)
 
 
-if "logged_in" not in st.session_state:
+if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
+
 if st.session_state.logged_in:
-    main_page()
+    main_page(st.session_state.username)
 else:
-    check_credentials()
-    if st.session_state.logged_in:
+    ans = check_credentials()
+    if ans[1]:
+        st.session_state.logged_in = True
+        st.session_state.username = ans[0]
         st.experimental_rerun()
