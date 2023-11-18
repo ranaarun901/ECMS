@@ -213,7 +213,7 @@ def main_page(username):
                 ['Actual Date', 'Customer Location City']).size().reset_index(name='Session Count')
             df_count['Actual Date'] = df_count['Actual Date'].dt.strftime(
                 '%d/%m/%y')
-            df_count = df_count.sort_values('Actual Date', ascending=False)
+            df_count = df_count.sort_values('Actual Date', ascending=True)
             sumcount = df_count['Session Count'].sum()
             revenue = sumcount*150
             revenue = formatINR(revenue)
